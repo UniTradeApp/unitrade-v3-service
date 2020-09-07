@@ -1,0 +1,10 @@
+{
+  "name": "unitrade-service",
+  "version": "0.1.0",
+  "description": "UniTrade service that allows \"Executors\" to \"Farm\" limit orders on UniSwap",
+  "main": "server.js",
+  "repository": "https://github.com/UniTradeApp/unitrade-service.git",
+  "author": "david@aktarytech.com",
+  "license": "UNLICENSED",
+  "private": true
+}
