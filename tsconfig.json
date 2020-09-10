@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "declaration": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "composite": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "paths": {
+        "src/*": ["src/*"]
+    },
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "types": [
+        "node",
+    ],
+    "typeRoots": [
+        "src/lib/types",
+        "node_modules/@types",
+    ]
+  },
+  "include": [
+    "src/**/**/*.ts",
+    "src/**/**/*.json"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "node_modules/*"
+  ],
+}
