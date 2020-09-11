@@ -25,14 +25,17 @@ export class UniSwapProvider extends Dependency {
 
   constructor(dependencies: IDependencies) {
     super(dependencies);
-
+    this.init();
+  }
+  
+  private init() {
     this.web3 = new Web3(config.ropsten.uri);
     
     this.accountId = config.user.account;
     const { factoryAddress, routerAddress } = config.uniswap;
     this.factory = new this.web3.eth.Contract(IUniswapV2Factory.abi, factoryAddress);
     this.router = new this.web3.eth.Contract(IUniswapV2Router02.abi, routerAddress);
-
+  
     this.callOptions = {
       from: this.accountId,
     };
