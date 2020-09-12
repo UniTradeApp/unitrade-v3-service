@@ -3,8 +3,9 @@ import { config as dotenvConfig } from 'dotenv';
 dotenvConfig();
 
 export interface IConfig {
-  user: {
-    account: string;
+  account: {
+    address: string;
+    privateKey: string;
   };
   ropsten: {
     uri: string;
@@ -28,8 +29,9 @@ const getEnv = (key: string) => {
 };
 
 export const config: IConfig = {
-  user: {
-    account: getEnv('USER_ACCOUNT'),
+  account: {
+    address: getEnv('ACCOUNT_ADDRESS'),
+    privateKey: getEnv('ACCOUNT_PRIVATE_KEY'),
   },
   ropsten: {
     uri: getEnv('ROPSTEN_URI'),

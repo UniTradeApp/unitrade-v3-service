@@ -1,10 +1,11 @@
-import { UniTradeProvider, UniSwapProvider } from '../providers';
+import { UniTradeProvider, UniSwapProvider, AccountProvider } from '../providers';
 
 /**
  * Dependencies
  */
 export class IDependencies {
   providers: {
+    account?: AccountProvider;
     uniTrade?: UniTradeProvider;
     uniSwap?: UniSwapProvider;
   };

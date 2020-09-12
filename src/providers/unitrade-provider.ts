@@ -2,44 +2,49 @@
  * UniTrade Smart Contract Provider
  */
 import debug from 'debug';
+import Web3 from 'web3';
+import { AbiItem } from 'web3-utils';
 
 import { config } from '../config';
 import UniTrade from '../lib/abis/UniTrade.json';
 import { Dependency } from '../lib/classes';
-import { IDependencies } from '../lib/types';
-
-const Web3 = require('web3');
+import { IDependencies, IUniTradeOrder } from '../lib/types';
 
 const log = debug('unitrade-service:providers:unitrade');
 
 export class UniTradeProvider extends Dependency {
-  private web3: any;
   public contract: any;
 
-  constructor(dependencies: IDependencies) {
-    super(dependencies);
-    this.init();
+  public init = (web3: Web3) => {
+    this.setWeb3(web3);
+    this.contract = new this.web3.eth.Contract(UniTrade.abi as AbiItem[], config.unitrade.address);
   }
-  
-  private init() {
-    this.web3 = new Web3(config.ropsten.uri);
-  
-    this.contract = new this.web3.eth.Contract(UniTrade.abi, config.unitrade.address);
-  };
 
-  public async listOrders(accountId: string) {
+  public listOrders = async () => {
     try {
-      return await this.contract.methods.listActiveOrders();
+      const callOpts = {
+        from: this.dependencies.providers.account?.address(),
+      };
+      const orderIds = await this.contract.methods.listActiveOrders().call(callOpts);
+      const orders: IUniTradeOrder[] = [];
+      for (let i = 0; i < orderIds.length; i += 1) {
+        const order = await this.contract.methods.getOrder(orderIds[i]).call(callOpts);
+        orders.push({
+          ...order,
+          orderId: orderIds[i],
+        });
+      }
+      return orders;
     } catch (err) {
       log('Error getting active orders: %O', err);
       throw err;
     }
   };
 
-  public async executeOrder(accountId: string, orderId: string) {
+  public executeOrder = async (orderId: string) => {
     try {
       return await this.contract.methods.executeOrder(orderId).send({
-        from: accountId,
+        from: this.dependencies.providers.account?.address(),
       });
     } catch (err) {
       log('Error placing order: %O', err);

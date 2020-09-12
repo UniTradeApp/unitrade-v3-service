@@ -5,7 +5,9 @@
  */
 import debug from 'debug';
 import { EventEmitter } from 'events';
+import Web3 from 'web3';
 
+import { config } from './config';
 import { loader } from './utils/loader';
 import { TokenPool } from './lib/classes';
 import { IDependencies, IUniTradeOrder } from './lib/types';
@@ -70,7 +72,7 @@ export class UniTradeExecutorService {
    * Get or Create TokenPool
    * @param pairAddress 
    */
-  private getOrCreatePool(pairAddress: string) {
+  private getOrCreatePool = (pairAddress: string) => {
     if (!this.getPool(pairAddress)) {
       this.pools[pairAddress] = new TokenPool(pairAddress);
     }
@@ -82,23 +84,19 @@ export class UniTradeExecutorService {
    * @param orderId 
    * @param order 
    */
-  private async addPoolOrder(orderId: string, order: IUniTradeOrder) {
-    const pairAddress = await this.dependencies.providers.uniSwap?.factory.methods
-      .getPairAddress(order.tokenIn, order.tokenOut)
-      .call(this.dependencies.providers.uniTrade?.callOptions);
-
-    this.getOrCreatePool(pairAddress).addOrder(orderId, order);
-  }
+  private addPoolOrder = async (orderId: string, order: IUniTradeOrder) => {
+    const pairAddress = await this.dependencies.providers.uniSwap?.getPairAddress(order.tokenIn, order.tokenOut);
+    const pool = this.getOrCreatePool(pairAddress);
+    pool.addOrder(orderId, order);
+  };
 
   /**
    * Remove order from associated TokenPool
    * @param orderId 
    * @param order 
    */
-  private async removePoolOrder(orderId: string, order: IUniTradeOrder) {
-    const pairAddress = await this.dependencies.providers.uniSwap?.factory.methods
-      .getPairAddress(order.tokenIn, order.tokenOut)
-      .call(this.dependencies.providers.uniTrade?.callOptions);
+  private removePoolOrder = async (orderId: string, order: IUniTradeOrder) => {
+    const pairAddress = await this.dependencies.providers.uniSwap?.getPairAddress(order.tokenIn, order.tokenOut);
 
     const orderPool = this.getPool(pairAddress);
 
@@ -111,79 +109,78 @@ export class UniTradeExecutorService {
    * Create listener for UniSwap pool updates
    * @param pairAddress 
    */
-  private async createPoolChangeListener(pairAddress: string) {    
-    const pairContract = await this.dependencies.providers.uniSwap?.getOrCreatePair(pairAddress);
+  private createPoolChangeListener = async (pairAddress: string) => { 
+    const pairContract = await this.dependencies.providers.uniSwap?.getOrCreatePairContract(pairAddress);
     
-    this.poolListeners[pairAddress] = await pairContract.events.Sync((err: Error) => {
+    log('Subscribing to UniSwap Sync events for pairAddress %s', pairAddress);
+    this.poolListeners[pairAddress] = await pairContract.events.Sync(async (err: Error, event: any) => {
       if (err) throw err;
-      log('Subscribed to UniSwap Sync events for pairAddress %s', pairAddress);
-    });
-    
-    // When an order event is received over the subscription, check if the price has changed
-    this.poolListeners[pairAddress].on('data', async (event: any) => {
-      if (event.returnValues) {
-        const ordersKeys = Object.keys(this.pools[pairAddress].orders);
-        if (ordersKeys.length) {
-          for (let o = 0; o < ordersKeys.length; o += 1) {
-            const order = this.pools[pairAddress].orders[ordersKeys[o]];
-            const shouldExecute = await this.dependencies.providers.uniSwap?.shouldPlaceOrder(order);
-            if (shouldExecute) {
+      log('Got UniSwap Sync event for pairAddress %s: %O', pairAddress, event);
+      const ordersKeys = Object.keys(this.pools[pairAddress].orders);
+      if (ordersKeys.length) {
+        for (let o = 0; o < ordersKeys.length; o += 1) {
+          const order = this.pools[pairAddress].orders[ordersKeys[o]];
+          const shouldExecute = await this.dependencies.providers.uniSwap?.shouldPlaceOrder(order);
 
-              // let uniswap calculate the gas cost automatically
-              await this.dependencies.providers.uniTrade?.executeOrder(order.orderId);
+          // THIS PART NEEDS TO BE TESTED STILL
 
-              // remove the subscription
-              this.poolListeners[pairAddress].removeAllListeners();
-              delete this.poolListeners[pairAddress];
-              // remove the order
-              this.pools[pairAddress].removeOrder(order.orderId);
-            }
+          log('Should execute order #%s?', order.orderId, shouldExecute);
+          if (shouldExecute) {
+
+            // let uniswap calculate the gas cost automatically
+            await this.dependencies.providers.uniTrade?.executeOrder(order.orderId);
+
+            // remove the subscription
+            this.poolListeners[pairAddress].removeAllListeners();
+            delete this.poolListeners[pairAddress];
+            // remove the order
+            this.pools[pairAddress].removeOrder(order.orderId);
           }
         }
       }
-    });
-    this.poolListeners[pairAddress].on('error', function (err: any) {
-      log('subscription error for pairAddress %s: %O', pairAddress, err);
     });
   }
 
   /**
    * Create listeners for UniTrade order events
    */
-  private async createOrderListeners() {
+  private createOrderListeners = async () => {
     // subscribe to UniTrade events to keep active orders up-to-date
     const uniTradeEvents = this.dependencies.providers.uniTrade?.contract.events;
   
-    this.orderListeners.OrderPlaced = await uniTradeEvents.OrderPlaced((err: Error) => {
+    log('Subscribing to UniTrade OrderPlaced events...');
+    this.orderListeners.OrderPlaced = await uniTradeEvents.OrderPlaced((err: Error, event: any) => {
       if (err) throw err;
-      log('Subscribed to UniTrade OrderPlaced events');
+      log('Got OrderPlaced event - %O', event);
     });
     this.orderListeners.OrderPlaced.on('data', (event: any) => {
       if (event.returnValues) {
-        const { orderId, order } = event.returnValues;
-        this.addPoolOrder(orderId, order);
+        const order = event.returnValues as IUniTradeOrder;
+        this.addPoolOrder(order.orderId, order);
       }
     });
-
-    this.orderListeners.OrderCancelled = await uniTradeEvents.OrderCancelled((err: Error) => {
+    
+    log('Subscribing to UniTrade OrderCancelled events...');
+    this.orderListeners.OrderCancelled = await uniTradeEvents.OrderCancelled((err: Error, event: any) => {
       if (err) throw err;
-      log('Subscribed to UniTrade OrderCancelled events');
+      log('Got OrderCancelled event - %O', event);
     });
     this.orderListeners.OrderCancelled.on('data', (event: any) => {
       if (event.returnValues) {
-        const { orderId, order } = event.returnValues;
-        this.removePoolOrder(orderId, order);
+        const order = event.returnValues as IUniTradeOrder;
+        this.removePoolOrder(order.orderId, order);
       }
     });
-
-    this.orderListeners.OrderExecuted = await uniTradeEvents.OrderExecuted((err: Error) => {
+    
+    log('Subscribing to UniTrade OrderExecuted events...');
+    this.orderListeners.OrderExecuted = await uniTradeEvents.OrderExecuted((err: Error, event: any) => {
       if (err) throw err;
-      log('Subscribed to UniTrade OrderExecuted events');
+      log('Got OrderExecuted event - %O', event);
     });
     this.orderListeners.OrderExecuted.on('data', (event: any) => {
       if (event.returnValues) {
-        const { orderId, order } = event.returnValues;
-        this.removePoolOrder(orderId, order);
+        const order = event.returnValues as IUniTradeOrder;
+        this.removePoolOrder(order.orderId, order);
       }
     });
   }
@@ -195,9 +192,11 @@ export class UniTradeExecutorService {
     try {
       log('Started UniTrade executor service');
 
-      this.dependencies = loader();
+      const web3 = new Web3(config.ropsten.uri);
+
+      this.dependencies = loader(web3);
   
-      this.activeOrders = await this.dependencies.providers.uniTrade?.listOrders();
+      this.activeOrders = await this.dependencies.providers.uniTrade?.listOrders() || [];
   
       log('Got %s active orders', this.activeOrders.length);
 
@@ -205,21 +204,22 @@ export class UniTradeExecutorService {
       if (this.activeOrders.length) {
         log('Initializing TokenPools...');
         for (let i = 0; i < this.activeOrders.length; i += 1) {
-          // Create a Pool class for each unique token set and add the orders
-          this.addPoolOrder(this.activeOrders[i].orderId, this.activeOrders[i]);
+          const order = this.activeOrders[i];
+          await this.addPoolOrder(order.orderId, order);
         }
       }
+
+      log('Created %s pool(s)', Object.keys(this.pools).length);
   
-      // For each unique token set, call the UniSwap smart contract and subscribe to price changes for that pool
       const poolsKeys = Object.keys(this.pools);
       if (poolsKeys.length) {
         for (let p = 0; p < poolsKeys.length; p += 1) {
+          // For each unique token set, call the UniSwap smart contract and subscribe to price changes for that pool
           this.createPoolChangeListener(poolsKeys[p]);
         }
       }
 
       await this.createOrderListeners();
-  
     } catch (err) {
       log('fatal error: %O', err);
       this.handleShutdown(1);
