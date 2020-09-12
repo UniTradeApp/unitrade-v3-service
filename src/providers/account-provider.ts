@@ -6,7 +6,6 @@ import Web3 from 'web3';
 
 import { config } from '../config';
 import { Dependency } from '../lib/classes';
-import { IDependencies } from '../lib/types';
 
 const log = debug('unitrade-service:providers:account');
 

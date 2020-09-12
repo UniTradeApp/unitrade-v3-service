@@ -6,11 +6,11 @@ import IUniswapV2Factory from '@uniswap/v2-core/build/IUniswapV2Factory.json';
 import IUniswapV2Router02 from '@uniswap/v2-periphery/build/IUniswapV2Router02.json';
 import debug from 'debug';
 import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
+import { AbiItem, toBN } from 'web3-utils';
 
 import { config } from '../config';
 import { Dependency } from '../lib/classes';
-import { IDependencies, IUniTradeOrder } from '../lib/types';
+import { IUniTradeOrder } from '../lib/types';
 
 const log = debug('unitrade-service:providers:uniswap');
 
@@ -27,9 +27,13 @@ export class UniSwapProvider extends Dependency {
   }
 
   public getPairAddress = async (tokenIn: string, tokenOut: string) => {
-    return await this.factory.methods.getPair(tokenIn, tokenOut).call({
-      from: this.dependencies.providers.account?.address(),
-    });
+    try {
+      return await this.factory.methods.getPair(tokenIn, tokenOut).call({
+        from: this.dependencies.providers.account?.address(),
+      });
+    } catch (err) {
+      return;
+    }
   }
 
   public getOrCreatePairContract = (pairAddress: string) => {
@@ -45,17 +49,23 @@ export class UniSwapProvider extends Dependency {
         from: this.dependencies.providers.account?.address(),
       });
 
+      console.log('Order: %O', order);
+      
+      console.log('Got amounts out: %O', amounts);
+
       if (!amounts || !amounts.length) {
         return false;
       }
       
       const resultingTokens = amounts[amounts.length - 1];
+
+      console.log('Resulting tokens: %O', resultingTokens);
       
       if (!resultingTokens) {
         return false;
       }
       
-      if (resultingTokens === order.amountOutDesired) {
+      if (toBN(resultingTokens).gte(toBN(order.amountOutExpected))) {
         return true;
       }
 

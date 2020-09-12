@@ -12,23 +12,27 @@ export class TokenPool {
     this.orders = orders;
   }
 
-  public addOrder(orderId: string, order: IUniTradeOrder) {
+  public addOrder(orderId: number, order: IUniTradeOrder) {
     if (!this.orders[orderId]) {
       this.orders[orderId] = order;
     }
   }
 
-  public getOrder(orderId: string) {
+  public getOrder(orderId: number) {
     return this.orders[orderId];
   }
 
-  public removeOrder(orderId: string) {
+  public getOrderCount() {
+    return Object.keys(this.orders).length;
+  }
+
+  public removeOrder(orderId: number) {
     if (this.orders[orderId]) {
       delete this.orders[orderId];
     }
   }
 
-  public updateOrder(orderId: string, order: IUniTradeOrder) {
+  public updateOrder(orderId: number, order: IUniTradeOrder) {
     if (this.orders[orderId]) {
       this.orders[orderId] = order;
     }
