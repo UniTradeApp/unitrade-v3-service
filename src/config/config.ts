@@ -3,10 +3,11 @@ import { config as dotenvConfig } from 'dotenv';
 dotenvConfig();
 
 export interface IConfig {
-  user: {
-    account: string;
+  account: {
+    address: string;
+    privateKey: string;
   };
-  ropsten: {
+  provider: {
     uri: string;
   };
   unitrade: {
@@ -16,6 +17,7 @@ export interface IConfig {
     factoryAddress: string;
     routerAddress: string;
   };
+  defaultGasLimit: string;
 }
 
 const getEnv = (key: string) => {
@@ -28,11 +30,12 @@ const getEnv = (key: string) => {
 };
 
 export const config: IConfig = {
-  user: {
-    account: getEnv('USER_ACCOUNT'),
+  account: {
+    address: getEnv('ACCOUNT_ADDRESS'),
+    privateKey: getEnv('ACCOUNT_PRIVATE_KEY'),
   },
-  ropsten: {
-    uri: getEnv('ROPSTEN_URI'),
+  provider: {
+    uri: getEnv('PROVIDER_URI'),
   },
   unitrade: {
     address: getEnv('UNITRADE_ADDRESS'),
@@ -41,4 +44,5 @@ export const config: IConfig = {
     factoryAddress: getEnv('UNISWAP_FACTORY_ADDRESS'),
     routerAddress: getEnv('UNISWAP_ROUTER_ADDRESS'),
   },
+  defaultGasLimit: getEnv('DEFAULT_GAS_LIMIT'),
 };

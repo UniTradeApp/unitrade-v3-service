@@ -1,10 +1,11 @@
-import { UniTradeProvider, UniSwapProvider } from '../providers';
+import { UniTradeProvider, UniSwapProvider, AccountProvider } from '../providers';
 
 /**
  * Dependencies
  */
 export class IDependencies {
   providers: {
+    account?: AccountProvider;
     uniTrade?: UniTradeProvider;
     uniSwap?: UniSwapProvider;
   };
@@ -29,7 +30,7 @@ export interface IUniSwapOrder {
 }
 
 export interface IUniTradeOrder {
-  orderId: string;
+  orderId: number;
 
   // addresses
   maker: string;
@@ -37,7 +38,7 @@ export interface IUniTradeOrder {
   tokenOut: string;
 
   amountInOffered: number;
-  amountOutDesired: number;
-  incentiveFee: number;
+  amountOutExpected: number;
+  executorFee: number;
   activeOrderIndex: number;
 }

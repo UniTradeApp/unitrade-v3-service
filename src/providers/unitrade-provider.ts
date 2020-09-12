@@ -2,57 +2,52 @@
  * UniTrade Smart Contract Provider
  */
 import debug from 'debug';
+import Web3 from 'web3';
+import { AbiItem, toBN } from 'web3-utils';
 
 import { config } from '../config';
 import UniTrade from '../lib/abis/UniTrade.json';
 import { Dependency } from '../lib/classes';
-import { IDependencies } from '../lib/types';
-
-const Web3 = require('web3');
+import { IUniTradeOrder } from '../lib/types';
 
 const log = debug('unitrade-service:providers:unitrade');
 
 export class UniTradeProvider extends Dependency {
-  private accountId: string;
-  private web3: any;
   public contract: any;
-  public callOptions = {};
-  public sendOptions = {};
 
-  constructor(dependencies: IDependencies) {
-    super(dependencies);
-
-    this.web3 = new Web3(config.ropsten.uri);
-
-    const { user, unitrade } = config;
-    this.accountId = user.account;
-    this.contract = new this.web3.eth.Contract(UniTrade.abi, unitrade.address);
-
-    this.callOptions = {
-      from: this.accountId,
-    };
-    this.sendOptions = this.callOptions;
+  public init = (web3: Web3) => {
+    this.setWeb3(web3);
+    this.contract = new this.web3.eth.Contract(UniTrade.abi as AbiItem[], config.unitrade.address);
   }
 
   public listOrders = async () => {
     try {
-      return await this.contract.methods.listActiveOrders().call({
-        from: this.accountId,
-      });
+      const callOpts = {
+        from: this.dependencies.providers.account?.address(),
+      };
+      const orderIds = await this.contract.methods.listActiveOrders().call(callOpts);
+      const orders: IUniTradeOrder[] = [];
+      for (let i = 0; i < orderIds.length; i += 1) {
+        const order = await this.contract.methods.getOrder(orderIds[i]).call(callOpts);
+        orders.push({
+          ...order,
+          orderId: typeof orderIds[i] === 'string' ? parseInt(orderIds[i]) : orderIds[i],
+        });
+      }
+      return orders;
     } catch (err) {
       log('Error getting active orders: %O', err);
-      throw err;
     }
   };
 
-  public executeOrder = async (orderId: string) => {
+  public executeOrder = async (order: IUniTradeOrder) => {
     try {
-      return await this.contract.methods.executeOrder(orderId).send({
-        from: this.accountId,
+      return await this.contract.methods.executeOrder(order.orderId).send({
+        from: this.dependencies.providers.account?.address(),
+        gas: config.defaultGasLimit,
       });
     } catch (err) {
-      log('Error placing order: %O', err);
-      throw err;
+      log(err);
     }
   };
 }
