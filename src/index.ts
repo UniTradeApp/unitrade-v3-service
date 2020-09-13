@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * UniTrade Order Execution Service
  * 
@@ -156,11 +158,18 @@ export class UniTradeExecutorService {
         return;
       }
     });
-    this.orderListeners.OrderPlaced.on('data', (event: any) => {
+    this.orderListeners.OrderPlaced.on('data', async (event: any) => {
       if (event.returnValues) {
         log('Received UniTrade OrderPlaced event for orderId: %s', event.returnValues.orderId);
         const order = event.returnValues as IUniTradeOrder;
-        this.addPoolOrder(order.orderId, order);
+        const shouldExecute = await this.dependencies.providers.uniSwap?.shouldPlaceOrder(order);
+  
+        log('Should execute order #%s?', order.orderId, shouldExecute);
+        if (shouldExecute) {
+          await this.dependencies.providers.uniTrade?.executeOrder(order);
+        } else {
+          this.addPoolOrder(order.orderId, order);
+        }
       }
     });
     
