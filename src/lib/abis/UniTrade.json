@@ -65,7 +65,7 @@
           "type": "uint8"
         },
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address payable",
           "name": "maker",
           "type": "address"
@@ -152,6 +152,38 @@
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "getActiveOrderId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getActiveOrdersLength",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
           "name": "orderId",
           "type": "uint256"
         }
@@ -200,7 +232,7 @@
         },
         {
           "internalType": "enum UniTrade.OrderState",
-          "name": "state",
+          "name": "orderState",
           "type": "uint8"
         }
       ],
@@ -208,13 +240,24 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "listActiveOrders",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "getOrderIdForAddress",
       "outputs": [
         {
-          "internalType": "uint256[]",
+          "internalType": "uint256",
           "name": "",
-          "type": "uint256[]"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -228,12 +271,12 @@
           "type": "address"
         }
       ],
-      "name": "listOrdersForAddress",
+      "name": "getOrdersForAddressLength",
       "outputs": [
         {
-          "internalType": "uint256[]",
+          "internalType": "uint256",
           "name": "",
-          "type": "uint256[]"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -242,44 +285,10 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "tokenIn",
-          "type": "address"
+          "internalType": "enum UniTrade.OrderType",
+          "name": "orderType",
+          "type": "uint8"
         },
-        {
-          "internalType": "address",
-          "name": "tokenOut",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amountInOffered",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amountOutExpected",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "executorFee",
-          "type": "uint256"
-        }
-      ],
-      "name": "placeOrderEthForTokens",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
         {
           "internalType": "address",
           "name": "tokenIn",
@@ -306,46 +315,7 @@
           "type": "uint256"
         }
       ],
-      "name": "placeOrderTokensForEth",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tokenIn",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "tokenOut",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amountInOffered",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amountOutExpected",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "executorFee",
-          "type": "uint256"
-        }
-      ],
-      "name": "placeOrderTokensForTokens",
+      "name": "placeOrder",
       "outputs": [
         {
           "internalType": "uint256",
