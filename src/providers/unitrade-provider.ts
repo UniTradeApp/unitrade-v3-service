@@ -25,13 +25,15 @@ export class UniTradeProvider extends Dependency {
       const callOpts = {
         from: this.dependencies.providers.account?.address(),
       };
-      const orderIds = await this.contract.methods.listActiveOrders().call(callOpts);
+
+      const activeOrdersLength = await this.contract.methods.getActiveOrdersLength().call(callOpts);
       const orders: IUniTradeOrder[] = [];
-      for (let i = 0; i < orderIds.length; i += 1) {
-        const order = await this.contract.methods.getOrder(orderIds[i]).call(callOpts);
+      for (let i = 0; i < activeOrdersLength; i += 1) {
+        const activeOrderId = await this.contract.methods.getActiveOrderId(i).call(callOpts);
+        const order = await this.contract.methods.getOrder(activeOrderId).call(callOpts);
         orders.push({
           ...order,
-          orderId: typeof orderIds[i] === 'string' ? parseInt(orderIds[i]) : orderIds[i],
+          orderId: typeof activeOrderId === 'string' ? parseInt(activeOrderId) : activeOrderId,
         });
       }
       return orders;
