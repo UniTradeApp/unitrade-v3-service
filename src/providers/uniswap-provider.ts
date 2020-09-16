@@ -45,31 +45,30 @@ export class UniSwapProvider extends Dependency {
 
   public shouldPlaceOrder = async (order: IUniTradeOrder): Promise<boolean | null> => {
     try {
+      let placeOrder = false;
+
+      log('[shouldPlaceOrder] input order: %O', order);
+
       const amounts = await this.router.methods.getAmountsOut(order.amountInOffered, [order.tokenIn, order.tokenOut]).call({
         from: this.dependencies.providers.account?.address(),
       });
 
-      console.log('Order: %O', order);
+      log('[shouldPlaceOrder] result of UniSwap getAmountsOut() method: %O', amounts);
       
-      console.log('Got amounts out: %O', amounts);
-
-      if (!amounts || !amounts.length) {
-        return false;
+      if (amounts && amounts.length) {
+        const resultingTokens = amounts[amounts.length - 1];
+        
+        log('[shouldPlaceOrder] resulting tokens: %O', resultingTokens);
+        
+        if (resultingTokens && toBN(resultingTokens).gte(toBN(order.amountOutExpected))) {
+          placeOrder = true;
+        }
+        
       }
       
-      const resultingTokens = amounts[amounts.length - 1];
+      log('[shouldPlaceOrder] should place order result: %O', placeOrder);
 
-      console.log('Resulting tokens: %O', resultingTokens);
-      
-      if (!resultingTokens) {
-        return false;
-      }
-      
-      if (toBN(resultingTokens).gte(toBN(order.amountOutExpected))) {
-        return true;
-      }
-
-      return false;
+      return placeOrder;
     } catch (err) {
       log('[shouldPlaceOrder] Error: %O', err);
       return null;
