@@ -1,6 +1,10 @@
-FROM node:12
+FROM node:12-alpine
 
 WORKDIR /usr/unitrade-service
+
+RUN apk update && \
+    apk upgrade && \
+    apk add git
 
 COPY package.json .
 COPY yarn.lock .
@@ -9,13 +13,8 @@ RUN yarn
 
 COPY . .
 
+RUN yarn build:fresh
+
 ENV DEBUG="unitrade-service*"
-ENV ACCOUNT_ADDRESS=${ACCOUNT_ADDRESS}
-ENV ACCOUNT_PRIVATE_KEY=${ACCOUNT_PRIVATE_KEY}
-ENV PROVIDER_URI=${PROVIDER_URI}
-ENV UNITRADE_ADDRESS=${UNITRADE_ADDRESS}
-ENV UNISWAP_ROUTER_ADDRESS=${UNISWAP_ROUTER_ADDRESS}
-ENV UNISWAP_FACTORY_ADDRESS=${UNISWAP_FACTORY_ADDRESS}
-ENV DEFAULT_GAS_LIMIT=${DEFAULT_GAS_LIMIT}
 
 CMD ["yarn", "main"]

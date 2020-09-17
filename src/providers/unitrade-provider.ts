@@ -22,15 +22,11 @@ export class UniTradeProvider extends Dependency {
 
   public listOrders = async () => {
     try {
-      const callOpts = {
-        from: this.dependencies.providers.account?.address(),
-      };
-
-      const activeOrdersLength = await this.contract.methods.getActiveOrdersLength().call(callOpts);
+      const activeOrdersLength = await this.contract.methods.getActiveOrdersLength().call();
       const orders: IUniTradeOrder[] = [];
       for (let i = 0; i < activeOrdersLength; i += 1) {
-        const activeOrderId = await this.contract.methods.getActiveOrderId(i).call(callOpts);
-        const order = await this.contract.methods.getOrder(activeOrderId).call(callOpts);
+        const activeOrderId = await this.contract.methods.getActiveOrderId(i).call();
+        const order = await this.contract.methods.getOrder(activeOrderId).call();
         orders.push({
           ...order,
           orderId: typeof activeOrderId === 'string' ? parseInt(activeOrderId) : activeOrderId,

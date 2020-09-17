@@ -8,8 +8,9 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "main": "yarn build && node dist/index.js",
+    "start": "yarn build && yarn main",
     "build": "tsc",
+    "main": "node dist/index.js",
     "build:fresh": "yarn clean && yarn build",
     "clean": "rimraf dist .tsbuildinfo",
     "debug": "yarn build && node --inspect-brk=5859 dist/index.js",
