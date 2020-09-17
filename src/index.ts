@@ -58,8 +58,8 @@ export class UniTradeExecutorService {
 
   constructor() {
     this.start();
-    process.on('SIGINT', () => { this.handleShutdown(); });
-    process.on('SIGTERM', () => { this.handleShutdown(); });
+    // process.on('SIGINT', () => { this.handleShutdown(); });
+    // process.on('SIGTERM', () => { this.handleShutdown(); });
   }
 
   /**
