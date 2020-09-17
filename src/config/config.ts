@@ -4,7 +4,6 @@ dotenvConfig();
 
 export interface IConfig {
   account: {
-    address: string;
     privateKey: string;
   };
   provider: {
@@ -31,7 +30,6 @@ const getEnv = (key: string) => {
 
 export const config: IConfig = {
   account: {
-    address: getEnv('ACCOUNT_ADDRESS'),
     privateKey: getEnv('ACCOUNT_PRIVATE_KEY'),
   },
   provider: {

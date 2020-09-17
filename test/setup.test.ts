@@ -1,7 +1,6 @@
 /**
  * Setup Test Environment
  */
-import IUniswapV2Factory from '@uniswap/v2-core/build/IUniswapV2Factory.json';
 import IUniswapV2Router02 from '@uniswap/v2-periphery/build/IUniswapV2Router02.json';
 import Web3 from 'web3';
 import { AbiItem, toBN, toWei } from 'web3-utils';

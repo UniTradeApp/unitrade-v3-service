@@ -1,6 +1,6 @@
 {
   "name": "unitrade-service",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "UniTrade service that allows \"Executors\" to \"Farm\" limit orders on UniSwap",
   "main": "server.js",
   "repository": "https://github.com/UniTradeApp/unitrade-service.git",
@@ -15,9 +15,7 @@
     "debug": "yarn build && node --inspect-brk=5859 dist/index.js",
     "dev": "nodemon",
     "lint": "eslint src/**/* --ext .ts",
-    "test": "export NODE_ENV=test && mocha --timeout 10000 \"test/**/*.test.{js,ts}\" -r ts-node/register/transpile-only",
-    "forever-start": "yarn build:fresh && DEBUG=unitrade* forever start dist/index.js",
-    "forever-stop": "forever stop dist/index.js"
+    "test": "export NODE_ENV=test && mocha --timeout 10000 \"test/**/*.test.{js,ts}\" -r ts-node/register/transpile-only"
   },
   "dependencies": {
     "@uniswap/sdk": "^3.0.3-beta.1",
