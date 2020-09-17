@@ -31,17 +31,17 @@ See the "Environment Variables" section below for more information on each varia
 
 ## Basic Usage
 
-Use the `main` script to build and run the service.
+Use the `start` script to build and run the service.
 
 ```code
-$ yarn main
+$ yarn start
 ```
 
 ## Advanced Usage
 
 ### Rebuilding
 
-If, after modifying the code, you don't see your changes after running `yarn main` (or `yarn build` by itself), re-build the service from scratch:
+If, after modifying the code, you don't see your changes after running `yarn start` (or `yarn build` by itself), re-build the service from scratch:
 
 ```code
 $ yarn build:fresh

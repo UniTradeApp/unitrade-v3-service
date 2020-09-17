@@ -116,12 +116,8 @@ export class UniTradeExecutorService {
     try {
       const pairContract = await this.dependencies.providers.uniSwap?.getOrCreatePairContract(pairAddress);
       
-      log('Subscribing to UniSwap Sync events for pairAddress %s', pairAddress);
-      this.poolListeners[pairAddress] = await pairContract.events.Sync(async (err: Error, event: any) => {
-        if (err) {
-          log(err);
-          return;
-        }
+      this.poolListeners[pairAddress] = await pairContract.events.Sync();
+      this.poolListeners[pairAddress].on('data', async () => {
         log('Got UniSwap Sync event for pairAddress %s', pairAddress);
         // remove the subscription if no more orders
         if (!this.pools[pairAddress] || !this.pools[pairAddress].getOrderCount()) {
@@ -152,26 +148,34 @@ export class UniTradeExecutorService {
           }
         }
       });
+      this.poolListeners[pairAddress].on('connected', () => {
+        log('Listener connected to UniSwap Sync events for pairAddress %s', pairAddress);
+      });
+      this.poolListeners[pairAddress].on('error', (err) => {
+        log(err);
+      });
+      this.poolListeners[pairAddress].on('end', async () => {
+        log('Listener lost connection to UniSwap Sync events for pairAddress %s! Reconnecting...', pairAddress);
+        this.createPoolChangeListener(pairAddress);
+      });
     } catch (err) {
       log('%O', err);
     }
   }
 
   /**
-   * Create listeners for UniTrade order events
+   * Create listener for UniTrade OrderPlaced events
    */
-  private createOrderListeners = async () => {
+  private createOrderPlacedListener = async () => {
     try {
-      // subscribe to UniTrade events to keep active orders up-to-date
       const uniTradeEvents = this.dependencies.providers.uniTrade?.contract.events;
-    
-      log('Subscribing to UniTrade OrderPlaced events...');
-      this.orderListeners.OrderPlaced = await uniTradeEvents.OrderPlaced((err: Error) => {
-        if (err) {
-          log(err);
-          return;
-        }
-      });
+  
+      if (this.orderListeners.OrderPlaced) {
+        this.orderListeners.OrderPlaced.removeAllListeners();
+        delete this.orderListeners.OrderPlaced;
+      }
+  
+      this.orderListeners.OrderPlaced = await uniTradeEvents.OrderPlaced();
       this.orderListeners.OrderPlaced.on('data', async (event: any) => {
         if (event.returnValues) {
           log('Received UniTrade OrderPlaced event for orderId: %s', event.returnValues.orderId);
@@ -186,8 +190,33 @@ export class UniTradeExecutorService {
           }
         }
       });
-      
-      log('Subscribing to UniTrade OrderCancelled events...');
+      this.orderListeners.OrderPlaced.on('connected', () => {
+        log('Listener connected to UniTrade OrderPlaced events');
+      });
+      this.orderListeners.OrderPlaced.on('error', (err) => {
+        log(err);
+      });
+      this.orderListeners.OrderPlaced.on('end', async () => {
+        log('Listener disconnected from UniTrade OrderPlaced events!');
+        this.createOrderPlacedListener();
+      });
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  /**
+   * Create listener for UniTrade OrderCancelled events
+   */
+  private createOrderCancelledListener = async () => {
+    try {
+      const uniTradeEvents = this.dependencies.providers.uniTrade?.contract.events;
+  
+      if (this.orderListeners.OrderCancelled) {
+        this.orderListeners.OrderCancelled.removeAllListeners();
+        delete this.orderListeners.OrderCancelled;
+      }
+
       this.orderListeners.OrderCancelled = await uniTradeEvents.OrderCancelled((err: Error) => {
         if (err) {
           log(err);
@@ -213,8 +242,33 @@ export class UniTradeExecutorService {
           }
         }
       });
-      
-      log('Subscribing to UniTrade OrderExecuted events...');
+      this.orderListeners.OrderCancelled.on('connected', () => {
+        log('Listener connected to UniTrade OrderCancelled events');
+      });
+      this.orderListeners.OrderCancelled.on('error', (err) => {
+        log(err);
+      });
+      this.orderListeners.OrderCancelled.on('end', async () => {
+        log('Listener disconnected from UniTrade OrderCancelled events!');
+        this.createOrderCancelledListener();
+      });
+    } catch (err) {
+      throw err;
+    }
+  };
+ 
+  /**
+   * Create listener for UniTrade OrderExecuted events
+   */
+  private createOrderExecutedListener = async () => {
+    try {
+      const uniTradeEvents = this.dependencies.providers.uniTrade?.contract.events;
+  
+      if (this.orderListeners.OrderExecuted) {
+        this.orderListeners.OrderExecuted.removeAllListeners();
+        delete this.orderListeners.OrderExecuted;
+      }
+
       this.orderListeners.OrderExecuted = await uniTradeEvents.OrderExecuted((err: Error) => {
         if (err) {
           log(err);
@@ -239,17 +293,27 @@ export class UniTradeExecutorService {
           }
         }
       });
+      this.orderListeners.OrderExecuted.on('connected', () => {
+        log('Listener connected to UniTrade OrderExecuted events');
+      });
+      this.orderListeners.OrderExecuted.on('error', (err) => {
+        log(err);
+      });
+      this.orderListeners.OrderExecuted.on('end', async () => {
+        log('Listener disconnected from UniTrade OrderExecuted events!');
+        this.createOrderExecutedListener();
+      });
     } catch (err) {
-      log('%O', err);
+      throw err;
     }
-  }
+  };
 
   /**
    * Main function
    */
   private async start() {
     try {
-      log('Started UniTrade executor service');
+      log('Starting UniTrade executor service...');
 
       const web3 = new Web3(config.provider.uri);
 
@@ -257,8 +321,7 @@ export class UniTradeExecutorService {
   
       this.activeOrders = await this.dependencies.providers.uniTrade?.listOrders() || [];
   
-      log('Got active orders: %O', this.activeOrders);
-      // log('Got %s active orders', this.activeOrders.length);
+      log('Got %s active orders', this.activeOrders.length);
 
       // Get a list of unique token sets from the open orders
       if (this.activeOrders.length) {
@@ -269,9 +332,12 @@ export class UniTradeExecutorService {
         }
       }
 
-      log('Created %s pool(s)', Object.keys(this.pools).length);
-  
-      await this.createOrderListeners();
+      // Subscribe to UniTrade events to keep active orders up-to-date
+      await this.createOrderPlacedListener();
+      await this.createOrderCancelledListener();
+      await this.createOrderExecutedListener();
+
+      log('UniTrade executor service is now running!');
     } catch (err) {
       log('%O', err);
     }
