@@ -58,9 +58,11 @@ export class UniSwapProvider extends Dependency {
         }
       }
 
-      await this.dependencies.providers.uniTrade?.contract.methods.executeOrder(order.orderId).estimateGas({
+      const estimatedGas = await this.dependencies.providers.uniTrade?.contract.methods.executeOrder(order.orderId).estimateGas({
         from: this.dependencies.providers.account?.address(),
       });
+
+      placeOrder = (estimatedGas <= order.executorFee);
       
       return placeOrder;
     } catch (err) {
