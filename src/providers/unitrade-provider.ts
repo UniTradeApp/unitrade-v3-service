@@ -6,7 +6,7 @@ import Web3 from 'web3';
 import { AbiItem, toBN } from 'web3-utils';
 
 import { config } from '../config';
-import UniTrade from '../lib/abis/UniTrade.json';
+import UniTrade from '../lib/abis/UniTradeOrderBook.json';
 import { Dependency } from '../lib/classes';
 import { IUniTradeOrder } from '../lib/types';
 

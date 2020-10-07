@@ -43,7 +43,7 @@ export class UniSwapProvider extends Dependency {
     return this.pairs[pairAddress];
   }
 
-  public shouldPlaceOrder = async (order: IUniTradeOrder): Promise<boolean | null> => {
+  public shouldPlaceOrder = async (order: IUniTradeOrder): Promise<boolean> => {
     try {
       let placeOrder = false;
 
@@ -57,11 +57,17 @@ export class UniSwapProvider extends Dependency {
           placeOrder = true;
         }
       }
+
+      const estimatedGas = await this.dependencies.providers.uniTrade?.contract.methods.executeOrder(order.orderId).estimateGas({
+        from: this.dependencies.providers.account?.address(),
+      });
+
+      placeOrder = (estimatedGas <= order.executorFee);
       
       return placeOrder;
     } catch (err) {
-      log('[shouldPlaceOrder] Error: %O', err);
-      return null;
+      log('[shouldPlaceOrder] Should not place due to: %O', err.message);
+      return false;
     }
   }
 }
