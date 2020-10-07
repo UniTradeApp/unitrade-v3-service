@@ -6,7 +6,7 @@ import Web3 from 'web3';
 import { AbiItem, toBN, toWei } from 'web3-utils';
 
 import { config } from '../src/config';
-import IUniTrade from '../src/lib/abis/UniTrade.json';
+import IUniTrade from '../src/lib/abis/UniTradeOrderBook.json';
 import IERC20 from './IERC20.json';
 
 const TOKEN_ADDRESSES = {

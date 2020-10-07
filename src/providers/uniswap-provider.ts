@@ -66,7 +66,7 @@ export class UniSwapProvider extends Dependency {
       
       return placeOrder;
     } catch (err) {
-      log('[shouldPlaceOrder] Error: %O', err);
+      log('[shouldPlaceOrder] Should not place due to: %O', err.message);
       return false;
     }
   }
