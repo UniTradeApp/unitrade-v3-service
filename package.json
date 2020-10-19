@@ -19,6 +19,11 @@
     "test": "export NODE_ENV=test && mocha --timeout 10000 \"test/**/*.test.{js,ts}\" -r ts-node/register/transpile-only"
   },
   "dependencies": {
+    "@ethersproject/address": "^5.0.0-beta",
+    "@ethersproject/contracts": "^5.0.0-beta",
+    "@ethersproject/networks": "^5.0.0-beta",
+    "@ethersproject/providers": "^5.0.0-beta",
+    "@ethersproject/solidity": "^5.0.0-beta",
     "@uniswap/sdk": "^3.0.3-beta.1",
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
