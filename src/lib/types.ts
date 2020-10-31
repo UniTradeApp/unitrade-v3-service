@@ -1,4 +1,4 @@
-import { UniTradeProvider, UniSwapProvider, AccountProvider } from '../providers';
+import { UniTradeProvider, UniSwapProvider, AccountProvider, EthGasStationProvider } from '../providers';
 
 /**
  * Dependencies
@@ -8,6 +8,7 @@ export class IDependencies {
     account?: AccountProvider;
     uniTrade?: UniTradeProvider;
     uniSwap?: UniSwapProvider;
+    ethGasStation?: EthGasStationProvider;
   };
 }
 
