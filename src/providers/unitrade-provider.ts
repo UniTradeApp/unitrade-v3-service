@@ -17,6 +17,7 @@ export class UniTradeProvider extends Dependency {
 
   public init = (web3: Web3) => {
     this.setWeb3(web3);
+    log('Connecting to Unitrade contract: %s', config.unitrade.address);
     this.contract = new this.web3.eth.Contract(UniTrade.abi as AbiItem[], config.unitrade.address);
   }
 
