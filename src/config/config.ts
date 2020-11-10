@@ -16,7 +16,9 @@ export interface IConfig {
     factoryAddress: string;
     routerAddress: string;
   };
-  defaultGasLimit: string;
+  percentSlippage: string;
+  gasPriceLevel: string;
+  badOrderRetry: string;
 }
 
 const getEnv = (key: string) => {
@@ -42,5 +44,7 @@ export const config: IConfig = {
     factoryAddress: getEnv('UNISWAP_FACTORY_ADDRESS'),
     routerAddress: getEnv('UNISWAP_ROUTER_ADDRESS'),
   },
-  defaultGasLimit: getEnv('DEFAULT_GAS_LIMIT'),
+  percentSlippage: getEnv('PERCENT_SLIPPAGE'),
+  gasPriceLevel: getEnv('GAS_PRICE_LEVEL'),
+  badOrderRetry: getEnv('BAD_ORDER_RETRY'),
 };

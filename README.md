@@ -28,7 +28,7 @@ Creating an environment configuration file is a required step for both local and
 - Rename it to `.env`
 - Add your values for each environment variable
 
-_See the "Environment Variables" section below for more information on each variable._
+_See the comments in your new `.env` file for more information on each variable._
 
 ## Basic Usage
 
@@ -74,22 +74,3 @@ Uses Nodemon to automatically restart the service after code changes.
 $ yarn dev
 ```
 
-## Environment Variables
-
-#### `ACCOUNT_PRIVATE_KEY`
-Fees collected for processing orders will be deposited to this account.
-
-#### `PROVIDER_URI`
-Points to an Ethereum network or node.
-
-#### `UNITRADE_ADDRESS`
-The address of the UniTrade smart contract on your chosen network.
-
-#### `UNISWAP_ROUTER_ADDRESS`
-The address of the UniSwap Router02 smart contract.
-
-#### `UNISWAP_FACTORY_ADDRESS`
-The address of the UniSwap Factory smart contract.
-
-#### `DEFAULT_GAS_LIMIT`
-Default gas limit to use for transactions.

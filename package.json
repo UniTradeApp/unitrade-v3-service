@@ -19,12 +19,14 @@
     "test": "export NODE_ENV=test && mocha --timeout 10000 \"test/**/*.test.{js,ts}\" -r ts-node/register/transpile-only"
   },
   "dependencies": {
+    "@types/node-fetch": "^2.5.7",
     "@uniswap/sdk": "^3.0.3-beta.1",
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "debug": "^4.1.1",
     "dotenv": "^8.2.0",
     "lodash": "^4.17.20",
+    "node-fetch": "^2.6.1",
     "web3": "^1.2.11",
     "web3-eth-contract": "^1.2.11"
   },

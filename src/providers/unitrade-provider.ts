@@ -17,6 +17,7 @@ export class UniTradeProvider extends Dependency {
 
   public init = (web3: Web3) => {
     this.setWeb3(web3);
+    log('Connecting to Unitrade contract: %s', config.unitrade.address);
     this.contract = new this.web3.eth.Contract(UniTrade.abi as AbiItem[], config.unitrade.address);
   }
 
@@ -38,14 +39,25 @@ export class UniTradeProvider extends Dependency {
     }
   };
 
-  public executeOrder = async (order: IUniTradeOrder) => {
+  public executeOrder = async (order: IUniTradeOrder, gas: number, gasPrice: number) => {
     try {
-      return await this.contract.methods.executeOrder(order.orderId).send({
-        from: this.dependencies.providers.account?.address(),
-        gas: config.defaultGasLimit,
-      });
+        log('Executing order: %s', order.orderId);
+        await this.contract.methods.executeOrder(order.orderId).send({
+            from: this.dependencies.providers.account?.address(),
+            gas,
+            gasPrice
+        })
+        .on('transactionHash', function(hash: string){
+            log('Transaction hash for order %s: %s', order.orderId, hash);
+        })
+        .on('receipt', function(receipt: any){
+            const profit = toBN(order.executorFee).sub(toBN(receipt.gasUsed).mul(toBN(gasPrice)));
+            log('Order %s executed. Profit in wei: %s', order.orderId, profit);
+        });
+        return true;
     } catch (err) {
-      log(err);
+      log('Error executing order %s: %O', order.orderId, err);
+      return false;
     }
   };
 }

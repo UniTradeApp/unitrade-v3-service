@@ -13,12 +13,13 @@ import { config } from './config';
 import { loader } from './utils/loader';
 import { TokenPool } from './lib/classes';
 import { IDependencies, IUniTradeOrder } from './lib/types';
-
+import { toBN } from 'web3-utils';
 const log = debug('unitrade-service');
 
 export class UniTradeExecutorService {
   private dependencies: IDependencies;
   private activeOrders: IUniTradeOrder[];
+  private badOrderMap: {[key: string]: number} = {};
   private pools: { [pairAddress: string]: TokenPool } = {};
   private poolListeners: { [pairAddress: string]: EventEmitter } = {};
   private orderListeners: { [eventName: string]: EventEmitter } = {};
@@ -58,8 +59,8 @@ export class UniTradeExecutorService {
 
   constructor() {
     this.start();
-    // process.on('SIGINT', () => { this.handleShutdown(); });
-    // process.on('SIGTERM', () => { this.handleShutdown(); });
+    process.on('SIGINT', () => { this.handleShutdown(); });
+    process.on('SIGTERM', () => { this.handleShutdown(); });
   }
 
   /**
@@ -108,6 +109,44 @@ export class UniTradeExecutorService {
     }
   }
 
+  private executeIfAppropriate = async (order: IUniTradeOrder) => {
+    const inTheMoney = await this.dependencies.providers.uniSwap?.isInTheMoney(order);
+    if(inTheMoney) {
+        let estimatedGas;
+        try{
+            estimatedGas = await this.dependencies.providers.ethGasStation?.getEstimatedGasForOrder(order.orderId);
+        } catch (err) {
+            log(`Failed order: ${JSON.stringify(order)}`);
+            if(this.badOrderMap[order.orderId]) {
+                this.badOrderMap[order.orderId] += 1;
+            } else {
+                this.badOrderMap[order.orderId] = 1;
+            }
+            if(this.badOrderMap[order.orderId] > Number(config.badOrderRetry)) {
+                log('Exceeded number of retries for order %s.  Removing from tracking.', order.orderId);
+                this.removePoolOrder(order.orderId, order);
+            }
+        }
+        if(!estimatedGas) {
+            log('Cannot retrieve preferred estimated gas for order %s', order.orderId);
+            return false;
+        }
+        const gasPrice = this.dependencies.providers.ethGasStation?.getPreferredGasPrice();
+        if(!gasPrice) {
+            log('Cannot retrieve preferred gas price for order %s', order.orderId);
+            return false;
+        }
+        const gas = toBN(estimatedGas).mul(toBN(gasPrice));
+
+        if (gas.lt(toBN(order.executorFee))) {
+            return await this.dependencies.providers.uniTrade?.executeOrder(order, estimatedGas, gasPrice);
+        } else {
+            log('Executor fee for order %s is not high enough to cover the estimated gas cost of executing order (%s < %s)', order.orderId, order.executorFee, gas);
+        }
+    }
+    return false;
+  }
+
   /**
    * Create listener for UniSwap pool updates
    * @param pairAddress 
@@ -130,18 +169,11 @@ export class UniTradeExecutorService {
             for (let o = 0; o < ordersKeys.length; o += 1) {
               const order = this.pools[pairAddress].orders[ordersKeys[o]];
               if (order) {
-                const shouldExecute = await this.dependencies.providers.uniSwap?.shouldPlaceOrder(order);
-      
-                log('Should execute order #%s?', order.orderId, shouldExecute);
-                if (shouldExecute) {
-      
-                  // let uniswap calculate the gas cost automatically
-                  await this.dependencies.providers.uniTrade?.executeOrder(order);
-      
-                  // remove the order
-                  if (this.pools[pairAddress]) {
+                const executed = await this.executeIfAppropriate(order);
+                // remove the order
+                if (executed && this.pools[pairAddress]) {
+                    log('Removing %s from tracking', order.orderId);
                     this.pools[pairAddress].removeOrder(order.orderId);
-                  }
                 }
               }
             } 
@@ -180,13 +212,10 @@ export class UniTradeExecutorService {
         if (event.returnValues) {
           log('Received UniTrade OrderPlaced event for orderId: %s', event.returnValues.orderId);
           const order = event.returnValues as IUniTradeOrder;
-          const shouldExecute = await this.dependencies.providers.uniSwap?.shouldPlaceOrder(order);
-    
-          log('Should execute order #%s?', order.orderId, shouldExecute);
-          if (shouldExecute) {
-            await this.dependencies.providers.uniTrade?.executeOrder(order);
-          } else {
-            this.addPoolOrder(order.orderId, order);
+          const executed = await this.executeIfAppropriate(order);
+          if(!executed) {
+              log('Adding %s to tracking', order.orderId);
+              this.addPoolOrder(order.orderId, order);
           }
         }
       });

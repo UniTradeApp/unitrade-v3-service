@@ -43,31 +43,24 @@ export class UniSwapProvider extends Dependency {
     return this.pairs[pairAddress];
   }
 
-  public shouldPlaceOrder = async (order: IUniTradeOrder): Promise<boolean> => {
+  public isInTheMoney = async (order: IUniTradeOrder): Promise<boolean> => {
     try {
-      let placeOrder = false;
-
       const amounts = await this.router.methods.getAmountsOut(order.amountInOffered, [order.tokenIn, order.tokenOut]).call({
         from: this.dependencies.providers.account?.address(),
       });
 
       if (amounts && amounts.length) {
         const resultingTokens = amounts[amounts.length - 1];
-        if (resultingTokens && toBN(resultingTokens).gte(toBN(order.amountOutExpected))) {
-          placeOrder = true;
+        const slippage = toBN(order.amountOutExpected).mul( toBN(Number(config.percentSlippage) * 10000) ).div(toBN(10000));
+        const inTheMoney = (resultingTokens && toBN(resultingTokens).gte( toBN(order.amountOutExpected).add(slippage) ));
+        if(inTheMoney){
+            log('Order %s is in the money. %s >= %s + %s', order.orderId, resultingTokens, order.amountOutExpected, slippage);
+            return true;
         }
       }
-
-      const estimatedGas = await this.dependencies.providers.uniTrade?.contract.methods.executeOrder(order.orderId).estimateGas({
-        from: this.dependencies.providers.account?.address(),
-      });
-
-      placeOrder = (estimatedGas <= order.executorFee);
-      
-      return placeOrder;
     } catch (err) {
       log('[shouldPlaceOrder] Should not place due to: %O', err.message);
-      return false;
     }
+    return false;
   }
 }
