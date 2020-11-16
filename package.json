@@ -5,7 +5,7 @@
   "main": "server.js",
   "repository": "https://github.com/UniTradeApp/unitrade-service.git",
   "author": "david@aktarytech.com",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "start": "yarn build && yarn main",
