@@ -44,7 +44,7 @@ export class UniTradeProvider extends Dependency {
         log('Executing order: %s', order.orderId);
         await this.contract.methods.executeOrder(order.orderId).send({
             from: this.dependencies.providers.account?.address(),
-            // gas,
+            gas,
             gasPrice
         })
         .on('transactionHash', function(hash: string){
