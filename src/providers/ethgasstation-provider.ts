@@ -45,8 +45,7 @@ export class EthGasStationProvider extends Dependency {
         return this.currentGasPrices[priceLevel];
     }
 
-    private getCurrentGasPricesInWei = async (): Promise<void> => {
-        log('Fetching gas prices...');
+    private getEthereumGasPricesInWei = async (): Promise<void> => {
         const response = await fetch('https://ethgasstation.info/json/ethgasAPI.json');
         if(response.ok) {
             const json = await response.json();
@@ -66,5 +65,36 @@ export class EthGasStationProvider extends Dependency {
             setTimeout(this.getCurrentGasPricesInWei, this.retryInterval);
             throw new Error('Unable to retrieve gas prices');
         }
+    }
+
+    // Note: Since there isn't a gasstation-like API available in BSC
+    // We are using current gasPrice from the network instead
+    private getSmartChainGasPricesInWei = async (): Promise<void> => {
+        const low = Number(await this.web3.eth.getGasPrice());
+        const medium = low * 1.1;
+        const high = low * 1.2;
+
+        const gasPrices = {
+        low,
+        medium,
+        high,
+        };
+
+        this.currentGasPrices = gasPrices;
+        log('Done. Gas prices now set to %s', gasPrices);
+        this.retryInterval = 25000;
+        setTimeout(this.getCurrentGasPricesInWei, this.retryInterval);
+    }
+
+    private getCurrentGasPricesInWei = async (): Promise<void> => {
+        log('Fetching gas prices...');
+        const chainId = await this.web3.eth.net.getId();
+
+        // Binance Smart Chain
+        if (chainId === 56) {
+            await this.getSmartChainGasPricesInWei();
+        } else {
+            await this.getEthereumGasPricesInWei();
+        }        
     };
 }
