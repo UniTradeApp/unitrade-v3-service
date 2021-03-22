@@ -15,6 +15,4 @@ COPY . .
 
 RUN yarn build:fresh
 
-ENV DEBUG="unitrade-service*"
-
-CMD ["yarn", "main"]
+CMD ["yarn", "start"]
