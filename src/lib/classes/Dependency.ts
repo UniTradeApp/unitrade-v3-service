@@ -1,8 +1,8 @@
 /**
  * Dependency Base Class
  */
-import Web3 from 'web3';
-import { IDependencies } from '../types';
+import Web3 from "web3";
+import { IDependencies } from "../types";
 
 export class Dependency {
   dependencies: IDependencies = {

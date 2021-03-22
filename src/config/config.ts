@@ -1,4 +1,4 @@
-import { config as dotenvConfig } from 'dotenv';
+import { config as dotenvConfig } from "dotenv";
 
 dotenvConfig();
 
@@ -32,19 +32,19 @@ const getEnv = (key: string) => {
 
 export const config: IConfig = {
   account: {
-    privateKey: getEnv('ACCOUNT_PRIVATE_KEY'),
+    privateKey: getEnv("ACCOUNT_PRIVATE_KEY"),
   },
   provider: {
-    uri: getEnv('PROVIDER_URI'),
+    uri: getEnv("PROVIDER_URI"),
   },
   unitrade: {
-    address: getEnv('UNITRADE_ADDRESS'),
+    address: getEnv("UNITRADE_ADDRESS"),
   },
   uniswap: {
-    factoryAddress: getEnv('UNISWAP_FACTORY_ADDRESS'),
-    routerAddress: getEnv('UNISWAP_ROUTER_ADDRESS'),
+    factoryAddress: getEnv("UNISWAP_FACTORY_ADDRESS"),
+    routerAddress: getEnv("UNISWAP_ROUTER_ADDRESS"),
   },
-  percentSlippage: getEnv('PERCENT_SLIPPAGE'),
-  gasPriceLevel: getEnv('GAS_PRICE_LEVEL'),
-  badOrderRetry: getEnv('BAD_ORDER_RETRY'),
+  percentSlippage: getEnv("PERCENT_SLIPPAGE"),
+  gasPriceLevel: getEnv("GAS_PRICE_LEVEL"),
+  badOrderRetry: getEnv("BAD_ORDER_RETRY"),
 };

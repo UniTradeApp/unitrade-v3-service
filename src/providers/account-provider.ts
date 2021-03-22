@@ -1,13 +1,13 @@
 /**
  * Account Provider
  */
-import debug from 'debug';
-import Web3 from 'web3';
+import debug from "debug";
+import Web3 from "web3";
 
-import { config } from '../config';
-import { Dependency } from '../lib/classes';
+import { config } from "../config";
+import { Dependency } from "../lib/classes";
 
-const log = debug('unitrade-service:providers:account');
+const log = debug("unitrade-service:providers:account");
 
 export class AccountProvider extends Dependency {
   private account: any;
