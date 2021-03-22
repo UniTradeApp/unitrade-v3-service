@@ -1,4 +1,4 @@
-import { UniTradeProvider, UniSwapProvider, AccountProvider, EthGasStationProvider } from '../providers';
+import { UniTradeProvider, UniSwapProvider, AccountProvider, EthGasStationProvider } from "../providers";
 
 /**
  * Dependencies
@@ -17,9 +17,9 @@ export class IDependencies {
  */
 export interface IUniSwapOrder {
   transactionHash: string;
-  transactionIndex: number,
+  transactionIndex: number;
   blockHash: string;
-  blockNumber: number,
+  blockNumber: number;
   from: string;
   to: string;
   gasUsed: number;
@@ -30,8 +30,14 @@ export interface IUniSwapOrder {
   events: any;
 }
 
+export enum OrderType {
+  LIMIT = 0,
+  STOP = 1,
+}
+
 export interface IUniTradeOrder {
   orderId: number;
+  orderType: OrderType;
 
   // addresses
   maker: string;

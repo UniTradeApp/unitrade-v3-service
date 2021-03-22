@@ -1,5 +1,6 @@
 .DS_Store
-.env
+.env*
+!.env.example
 .tsbuildinfo
 dist/
 node_modules/

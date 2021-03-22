@@ -10,7 +10,7 @@ import { AbiItem, toBN } from 'web3-utils';
 
 import { config } from '../config';
 import { Dependency } from '../lib/classes';
-import { IUniTradeOrder } from '../lib/types';
+import { IUniTradeOrder, OrderType } from '../lib/types';
 
 const log = debug('unitrade-service:providers:uniswap');
 
@@ -52,7 +52,11 @@ export class UniSwapProvider extends Dependency {
       if (amounts && amounts.length) {
         const resultingTokens = amounts[amounts.length - 1];
         const slippage = toBN(order.amountOutExpected).mul( toBN(Number(config.percentSlippage) * 10000) ).div(toBN(10000));
-        const inTheMoney = (resultingTokens && toBN(resultingTokens).gte( toBN(order.amountOutExpected).add(slippage) ));
+
+        const inTheMoney = order.orderType === OrderType.LIMIT ? 
+          (resultingTokens && toBN(resultingTokens).gte( toBN(order.amountOutExpected).add(slippage) )): 
+          (resultingTokens && toBN(resultingTokens).lte( toBN(order.amountOutExpected).add(slippage) ))
+
         if(inTheMoney){
             log('Order %s is in the money. %s >= %s + %s', order.orderId, resultingTokens, order.amountOutExpected, slippage);
             return true;

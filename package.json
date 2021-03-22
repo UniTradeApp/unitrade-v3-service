@@ -8,9 +8,9 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "yarn build && yarn main",
+    "start:dev": "yarn build && yarn start",
     "build": "tsc",
-    "main": "node dist/index.js",
+    "start": "DEBUG=\"unitrade-service*\" node dist/index.js",
     "build:fresh": "yarn clean && yarn build",
     "clean": "rimraf dist .tsbuildinfo",
     "debug": "yarn build && node --inspect-brk=5859 dist/index.js",
