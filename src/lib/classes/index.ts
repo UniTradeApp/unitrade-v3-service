@@ -1,7 +1,4 @@
-import { Dependency } from './Dependency';
-import { TokenPool } from './TokenPool';
+import { Dependency } from "./Dependency";
+import { TokenPool } from "./TokenPool";
 
-export {
-  Dependency,
-  TokenPool,
-};
+export { Dependency, TokenPool };

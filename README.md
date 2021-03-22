@@ -3,7 +3,8 @@
 Allows "executors" to process limit orders on UniSwap.
 
 ## DISCLAIMER
-This software is provided as an open source starting point for you to develop your own solution. While UniTrade believes that this example will work as intended on a basic level, it is not optimized, so if you run it as-is, you will likely experience losses. Evaluate the code yourself, identify and implement your optimization strategies, and manage the risks involved before running this application.  If you are not comfortable modifying the code yourself, UniTrade discourages you from using this software.
+
+This software is provided as an open source starting point for you to develop your own solution. While UniTrade believes that this example will work as intended on a basic level, it is not optimized, so if you run it as-is, you will likely experience losses. Evaluate the code yourself, identify and implement your optimization strategies, and manage the risks involved before running this application. If you are not comfortable modifying the code yourself, UniTrade discourages you from using this software.
 
 ## Setup
 
@@ -76,4 +77,3 @@ Uses Nodemon to automatically restart the service after code changes.
 ```
 $ yarn dev
 ```
-

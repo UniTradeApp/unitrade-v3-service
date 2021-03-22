@@ -1,7 +1,7 @@
 /**
  * Token Pool Class
  */
-import { IUniTradeOrder } from '../types';
+import { IUniTradeOrder } from "../types";
 
 export class TokenPool {
   public pair: string;

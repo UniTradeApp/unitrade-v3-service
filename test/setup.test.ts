@@ -1,16 +1,16 @@
 /**
  * Setup Test Environment
  */
-import IUniswapV2Router02 from '@uniswap/v2-periphery/build/IUniswapV2Router02.json';
-import Web3 from 'web3';
-import { AbiItem, toBN, toWei } from 'web3-utils';
+import IUniswapV2Router02 from "@uniswap/v2-periphery/build/IUniswapV2Router02.json";
+import Web3 from "web3";
+import { AbiItem, toBN, toWei } from "web3-utils";
 
-import { config } from '../src/config';
-import IUniTrade from '../src/lib/abis/UniTradeOrderBook.json';
-import IERC20 from './IERC20.json';
+import { config } from "../src/config";
+import IUniTrade from "../src/lib/abis/UniTradeOrderBook.json";
+import IERC20 from "./IERC20.json";
 
 const TOKEN_ADDRESSES = {
-  DAI: '0xad6d458402f60fd3bd25163575031acdce07538d',
+  DAI: "0xad6d458402f60fd3bd25163575031acdce07538d",
 };
 
 async function test() {
@@ -37,27 +37,33 @@ async function test() {
   // set order params
   const executorFee = 1;
   const gasLimit = 1000000;
-  
-  const order1TokenInAmount = toWei('0.01');
+
+  const order1TokenInAmount = toWei("0.01");
   const order1TokenOutAmount = toBN(4.72 * Math.pow(10, daiDecimals));
-  const orderParams1: any[] = [wethAddress, TOKEN_ADDRESSES.DAI, order1TokenInAmount, order1TokenOutAmount, executorFee];
+  const orderParams1: any[] = [
+    wethAddress,
+    TOKEN_ADDRESSES.DAI,
+    order1TokenInAmount,
+    order1TokenOutAmount,
+    executorFee,
+  ];
 
   let activeOrders = await uniTrade.methods.listActiveOrders().call(callOpts);
 
   // Place some orders
-  
+
   if (!activeOrders.length || activeOrders.length < 2) {
     await uniTrade.methods.placeOrderEthForTokens(...orderParams1).send({
       from: account.address,
       gas: gasLimit,
-      value: order1TokenInAmount + executorFee
+      value: order1TokenInAmount + executorFee,
     });
 
     if (activeOrders.length < 2) {
       await uniTrade.methods.placeOrderEthForTokens(...orderParams1).send({
         from: account.address,
         gas: gasLimit,
-        value: order1TokenInAmount + executorFee
+        value: order1TokenInAmount + executorFee,
       });
     }
   }
