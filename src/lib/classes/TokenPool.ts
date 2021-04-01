@@ -1,18 +1,18 @@
 /**
  * Token Pool Class
  */
-import { IUniTradeOrder } from "../types";
+import { IUniTradeV2Order } from "../types";
 
 export class TokenPool {
   public pair: string;
-  public orders: { [id: string]: IUniTradeOrder };
+  public orders: { [id: string]: IUniTradeV2Order };
 
-  constructor(pair: string, orders: { [id: string]: IUniTradeOrder } = {}) {
+  constructor(pair: string, orders: { [id: string]: IUniTradeV2Order } = {}) {
     this.pair = pair;
     this.orders = orders;
   }
 
-  public addOrder(orderId: number, order: IUniTradeOrder) {
+  public addOrder(orderId: number, order: IUniTradeV2Order) {
     if (!this.orders[orderId]) {
       this.orders[orderId] = order;
     }
@@ -32,7 +32,7 @@ export class TokenPool {
     }
   }
 
-  public updateOrder(orderId: number, order: IUniTradeOrder) {
+  public updateOrder(orderId: number, order: IUniTradeV2Order) {
     if (this.orders[orderId]) {
       this.orders[orderId] = order;
     }

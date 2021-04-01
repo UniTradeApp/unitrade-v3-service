@@ -6,9 +6,9 @@ import Web3 from "web3";
 import { AbiItem, toBN } from "web3-utils";
 
 import { config } from "../config";
-import UniTrade from "../lib/abis/UniTradeOrderBook.json";
+import UniTrade from "../lib/abis/UniTradeV2OrderBook.json";
 import { Dependency } from "../lib/classes";
-import { IUniTradeOrder } from "../lib/types";
+import { IUniTradeV2Order } from "../lib/types";
 
 const log = debug("unitrade-service:providers:unitrade");
 
@@ -24,7 +24,7 @@ export class UniTradeProvider extends Dependency {
   public listOrders = async () => {
     try {
       const activeOrdersLength = await this.contract.methods.getActiveOrdersLength().call();
-      const orders: IUniTradeOrder[] = [];
+      const orders: IUniTradeV2Order[] = [];
       for (let i = 0; i < activeOrdersLength; i += 1) {
         const activeOrderId = await this.contract.methods.getActiveOrderId(i).call();
         const order = await this.contract.methods.getOrder(activeOrderId).call();
@@ -39,7 +39,7 @@ export class UniTradeProvider extends Dependency {
     }
   };
 
-  public executeOrder = async (order: IUniTradeOrder, gas: number, gasPrice: number) => {
+  public executeOrder = async (order: IUniTradeV2Order, gas: number, gasPrice: number) => {
     try {
       log("Executing order: %s", order.orderId);
       await this.contract.methods

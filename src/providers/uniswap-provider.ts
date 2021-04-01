@@ -10,7 +10,7 @@ import { AbiItem, toBN } from "web3-utils";
 
 import { config } from "../config";
 import { Dependency } from "../lib/classes";
-import { IUniTradeOrder, OrderType } from "../lib/types";
+import { IUniTradeV2Order, OrderType } from "../lib/types";
 
 const log = debug("unitrade-service:providers:uniswap");
 
@@ -43,7 +43,7 @@ export class UniSwapProvider extends Dependency {
     return this.pairs[pairAddress];
   };
 
-  public isInTheMoney = async (order: IUniTradeOrder): Promise<boolean> => {
+  public isInTheMoney = async (order: IUniTradeV2Order): Promise<boolean> => {
     try {
       const amounts = await this.router.methods
         .getAmountsOut(order.amountInOffered, [order.tokenIn, order.tokenOut])

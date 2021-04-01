@@ -49,3 +49,17 @@ export interface IUniTradeOrder {
   executorFee: number;
   activeOrderIndex: number;
 }
+
+export interface IUniTradeV2Order {
+  orderId: number;
+  orderType: number;
+  maker: string;
+  tokenIn: string;
+  tokenOut: string;
+  amountInOffered: number;
+  amountOutExpected: number;
+  executorFee: number;
+  totalEthDeposited: number;
+  orderState: number;
+  deflationary: boolean;
+}

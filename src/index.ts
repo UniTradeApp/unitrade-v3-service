@@ -12,13 +12,13 @@ import Web3 from "web3";
 import { config } from "./config";
 import { loader } from "./utils/loader";
 import { TokenPool } from "./lib/classes";
-import { IDependencies, IUniTradeOrder } from "./lib/types";
+import { IDependencies, IUniTradeV2Order } from "./lib/types";
 import { toBN } from "web3-utils";
 const log = debug("unitrade-service");
 
 export class UniTradeExecutorService {
   private dependencies: IDependencies;
-  private activeOrders: IUniTradeOrder[];
+  private activeOrders: IUniTradeV2Order[];
   private badOrderMap: { [key: string]: number } = {};
   private pools: { [pairAddress: string]: TokenPool } = {};
   private poolListeners: { [pairAddress: string]: EventEmitter } = {};
@@ -84,7 +84,7 @@ export class UniTradeExecutorService {
    * @param orderId
    * @param order
    */
-  private addPoolOrder = async (orderId: number, order: IUniTradeOrder) => {
+  private addPoolOrder = async (orderId: number, order: IUniTradeV2Order) => {
     try {
       const pairAddress = await this.dependencies.providers.uniSwap?.getPairAddress(order.tokenIn, order.tokenOut);
       const pool = this.getOrCreatePool(pairAddress);
@@ -99,7 +99,7 @@ export class UniTradeExecutorService {
    * @param orderId
    * @param order
    */
-  private removePoolOrder = async (orderId: number, order: IUniTradeOrder) => {
+  private removePoolOrder = async (orderId: number, order: IUniTradeV2Order) => {
     try {
       const pairAddress = await this.dependencies.providers.uniSwap?.getPairAddress(order.tokenIn, order.tokenOut);
 
@@ -113,7 +113,7 @@ export class UniTradeExecutorService {
     }
   };
 
-  private executeIfAppropriate = async (order: IUniTradeOrder) => {
+  private executeIfAppropriate = async (order: IUniTradeV2Order) => {
     const inTheMoney = await this.dependencies.providers.uniSwap?.isInTheMoney(order);
     if (inTheMoney) {
       let estimatedGas;
@@ -220,7 +220,7 @@ export class UniTradeExecutorService {
       this.orderListeners.OrderPlaced.on("data", async (event: any) => {
         if (event.returnValues) {
           log("Received UniTrade OrderPlaced event for orderId: %s", event.returnValues.orderId);
-          const order = event.returnValues as IUniTradeOrder;
+          const order = event.returnValues as IUniTradeV2Order;
           const executed = await this.executeIfAppropriate(order);
           if (!executed) {
             log("Adding %s to tracking", order.orderId);
@@ -264,7 +264,7 @@ export class UniTradeExecutorService {
       this.orderListeners.OrderCancelled.on("data", async (event: any) => {
         if (event.returnValues) {
           log("Received UniTrade OrderCancelled event for orderId: %s", event.returnValues.orderId);
-          const order = event.returnValues as IUniTradeOrder;
+          const order = event.returnValues as IUniTradeV2Order;
           this.removePoolOrder(order.orderId, order);
           log("removed pool order for orderId %s", event.returnValues.orderId);
 
@@ -316,7 +316,7 @@ export class UniTradeExecutorService {
       this.orderListeners.OrderExecuted.on("data", async (event: any) => {
         if (event.returnValues) {
           log("Received UniTrade OrderExecuted event for orderId: %s", event.returnValues.orderId);
-          const order = event.returnValues as IUniTradeOrder;
+          const order = event.returnValues as IUniTradeV2Order;
           this.removePoolOrder(order.orderId, order);
           log("removed pool order for orderId %s", event.returnValues.orderId);
 

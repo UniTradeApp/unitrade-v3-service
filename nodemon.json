@@ -2,7 +2,7 @@
   "watch": ["src"],
   "ext": "ts",
   "ignore": ["src/**/*.test.ts"],
-  "exec": "yarn main",
+  "exec": "yarn start:dev",
   "env": {
     "DEBUG": "unitrade-service*"
   }
