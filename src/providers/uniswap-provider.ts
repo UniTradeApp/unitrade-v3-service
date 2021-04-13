@@ -57,10 +57,7 @@ export class UniSwapProvider extends Dependency {
           .mul(toBN(Number(config.percentSlippage) * 10000))
           .div(toBN(10000));
 
-        const inTheMoney =
-          order.orderType === OrderType.LIMIT
-            ? resultingTokens && toBN(resultingTokens).gte(toBN(order.amountOutExpected).add(slippage))
-            : resultingTokens && toBN(resultingTokens).lte(toBN(order.amountOutExpected).add(slippage));
+        const inTheMoney = resultingTokens && toBN(resultingTokens).gte(toBN(order.amountOutExpected).add(slippage));
 
         if (inTheMoney) {
           log(
